@@ -3,6 +3,8 @@ package com.garnier.julien.hangman.di
 import android.app.Application
 import androidx.room.Room
 import com.garnier.julien.hangman.database.HangManDatabase
+import com.garnier.julien.hangman.database.repository.GameStatusRepository
+import com.garnier.julien.hangman.database.repository.WordToGuessRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,5 +23,11 @@ class DataModule {
             .createFromAsset("hangman_database.db")
             .build()
     }
+
+    @Provides
+    fun provideGameStatusRepository(hangManDatabase: HangManDatabase) = GameStatusRepository(hangManDatabase.gameStatusDao())
+
+    @Provides
+    fun provideWordToGuessRepository(hangManDatabase: HangManDatabase) = WordToGuessRepository(hangManDatabase.wordToGuessDao())
 
 }
