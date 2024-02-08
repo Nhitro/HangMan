@@ -66,19 +66,27 @@ class MainViewModel @Inject constructor(
         val word = currentGameStatus.wordToGuess.word
 
         currentGameStatusMutableLiveData.value =
-            if (!word.contains(letter, ignoreCase = true))
-                currentGameStatus.copy(numberOfTriesLeft = currentGameStatus.numberOfTriesLeft - 1)
-            else {
+            if (!word.contains(letter, ignoreCase = true)) {
+                val newNumberOfTries = currentGameStatus.numberOfTriesLeft - 1
+
+                currentGameStatus.copy(
+                    numberOfTriesLeft = newNumberOfTries,
+                    showLooserAlert = newNumberOfTries == 0,
+                )
+            } else {
                 val newAlreadyGuessedLettersList =
                     currentGameStatus
                         .lettersAlreadyGuessed
                         ?.mapIndexed { index, shownLetter ->
-                            if (word.indexOf(letter) == index) letter
+                            if (word[index].toString().equals(letter, ignoreCase = true)) letter
                             else shownLetter
                         }
                         ?: arrayListOf()
 
-                currentGameStatus.copy(lettersAlreadyGuessed = newAlreadyGuessedLettersList)
+                currentGameStatus.copy(
+                    lettersAlreadyGuessed = newAlreadyGuessedLettersList,
+                    showWinnerAlert = !newAlreadyGuessedLettersList.contains(HIDDEN_LETTER),
+                )
             }
     }
 
@@ -92,6 +100,8 @@ class MainViewModel @Inject constructor(
         val numberOfVictories: Int = -1,
         val numberOfTriesLeft: Int = -1,
         val isGameOver: Boolean = false,
+        val showWinnerAlert: Boolean = false,
+        val showLooserAlert: Boolean = false,
     )
 
     companion object {
