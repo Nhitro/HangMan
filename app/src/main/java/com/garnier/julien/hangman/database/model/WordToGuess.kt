@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class WordToGuess(
     @PrimaryKey(autoGenerate = true) val id: Long,
     val word: String,
+    val lettersAlreadyGuessed: String?,
     val alreadyGuessed: Boolean,
 )

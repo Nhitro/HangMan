@@ -33,10 +33,14 @@ class MainViewModel @Inject constructor(
                         .randomOrNull()
                 }
             val isGameOver = nextWordToGuess == null
+            val lettersAlreadyGuessed: List<String>? = nextWordToGuess?.let {
+                it.lettersAlreadyGuessed?.chunked(1) ?: it.word.map { HIDDEN_LETTER }
+            }
 
             currentGameStatusMutableLiveData.postValue(
                 CurrentGameStatus(
                     nextWordToGuess,
+                    lettersAlreadyGuessed,
                     gameStatus.numberOfGames,
                     gameStatus.numberOfVictories,
                     gameStatus.currentTriesLeft.takeUnless { it == -1 } ?: MAX_NUMBER_OF_TRIES,
@@ -50,6 +54,7 @@ class MainViewModel @Inject constructor(
 
     data class CurrentGameStatus(
         val wordToGuess: WordToGuess?,
+        val lettersAlreadyGuessed: List<String>?,
         val numberOfGames: Int,
         val numberOfVictories: Int,
         val numberOfTriesLeft: Int,
@@ -58,5 +63,6 @@ class MainViewModel @Inject constructor(
 
     companion object {
         private const val MAX_NUMBER_OF_TRIES = 10
+        private const val HIDDEN_LETTER = "_"
     }
 }
