@@ -24,8 +24,8 @@ class MainViewModel @Inject constructor(
             val gameStatus = gameStatusRepository.getCurrentGameStatus()
             val allWordToGuess = wordToGuessRepository.getAllWordToGuess()
             val nextWordToGuess: WordToGuess? =
-                if (gameStatus.currentWordToGuessId != -1) {
-                    allWordToGuess.find { gameStatus.id == it.id }
+                if (gameStatus.currentWordToGuessId != -1L) {
+                    allWordToGuess.find { gameStatus.currentWordToGuessId == it.id }
                 }
                 else {
                     allWordToGuess
