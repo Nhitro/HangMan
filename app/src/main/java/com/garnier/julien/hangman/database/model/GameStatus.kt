@@ -5,9 +5,9 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class GameStatus(
-    @PrimaryKey val id: Int,
+    @PrimaryKey val id: Long,
     val numberOfVictories: Int,
     val numberOfGames: Int,
-    val currentWordToGuessId: Int,
+    val currentWordToGuessId: Long,
     val currentTriesLeft: Int,
 )
