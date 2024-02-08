@@ -1,5 +1,6 @@
 package com.garnier.julien.hangman.ui
 
+import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -50,14 +51,46 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    @MainThread
+    fun guessLetter(letter: String) {
+        val currentGameStatus = getCurrentGameStatus()
+
+        // Do nothing when the game is already over, best way would be disable text input on UI side
+        if (currentGameStatus.isGameOver || currentGameStatus.wordToGuess == null)
+            return
+
+        // Do nothing when player types a letter already guessed
+        if (currentGameStatus.lettersAlreadyGuessed?.contains(letter) == true)
+            return
+
+        val word = currentGameStatus.wordToGuess.word
+
+        currentGameStatusMutableLiveData.value =
+            if (!word.contains(letter, ignoreCase = true))
+                currentGameStatus.copy(numberOfTriesLeft = currentGameStatus.numberOfTriesLeft - 1)
+            else {
+                val newAlreadyGuessedLettersList =
+                    currentGameStatus
+                        .lettersAlreadyGuessed
+                        ?.mapIndexed { index, shownLetter ->
+                            if (word.indexOf(letter) == index) letter
+                            else shownLetter
+                        }
+                        ?: arrayListOf()
+
+                currentGameStatus.copy(lettersAlreadyGuessed = newAlreadyGuessedLettersList)
+            }
+    }
+
     fun getCurrentGameStatusLiveData(): LiveData<CurrentGameStatus> = currentGameStatusMutableLiveData
 
+    private fun getCurrentGameStatus() = currentGameStatusMutableLiveData.value ?: CurrentGameStatus()
     data class CurrentGameStatus(
-        val wordToGuess: WordToGuess?,
-        val lettersAlreadyGuessed: List<String>?,
-        val numberOfGames: Int,
-        val numberOfVictories: Int,
-        val numberOfTriesLeft: Int,
+        val wordToGuess: WordToGuess? = null,
+        val lettersAlreadyGuessed: List<String>? = null,
+        val numberOfGames: Int = -1,
+        val numberOfVictories: Int = -1,
+        val numberOfTriesLeft: Int = -1,
         val isGameOver: Boolean = false,
     )
 
