@@ -1,9 +1,10 @@
-package com.garnier.julien.hangman
+package com.garnier.julien.hangman.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.lifecycle.AndroidViewModel
+import com.garnier.julien.hangman.R
 
 class MainActivity : AppCompatActivity() {
 
