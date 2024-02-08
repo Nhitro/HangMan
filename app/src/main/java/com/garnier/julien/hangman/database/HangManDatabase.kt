@@ -5,5 +5,5 @@ import androidx.room.RoomDatabase
 import com.garnier.julien.hangman.database.model.GameStatus
 import com.garnier.julien.hangman.database.model.WordToGuess
 
-@Database(entities = [GameStatus::class, WordToGuess::class], version = 1)
+@Database(entities = [GameStatus::class, WordToGuess::class], version = 1, exportSchema = false)
 abstract class HangManDatabase : RoomDatabase()
