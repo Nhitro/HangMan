@@ -29,12 +29,14 @@ class MainActivity : AppCompatActivity() {
         // Init listeners
         binding.textInputGuesser.setEndIconOnClickListener {
             val letter = binding.textInputGuesserEditText.text?.toString()
-            if (letter != null)
-                mainViewModel.guessLetter(letter)
-            else
+            if (letter == null)
                 Toast
                     .makeText(this, getString(R.string.no_letter_to_guess), Toast.LENGTH_SHORT)
                     .show()
+            else {
+                mainViewModel.guessLetter(letter)
+                binding.textInputGuesserEditText.setText("")
+            }
         }
 
         // Update view according VM state
