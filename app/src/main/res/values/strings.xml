@@ -6,5 +6,6 @@
     <string name="number_of_games">Number of games : %d</string>
     <string name="game_state_description">Try to guess the word !\nYou have %d tries left…</string>
     <string name="hint_guesser_text_input">Tape any letter to guess</string>
+    <string name="game_is_over">No more word to guess. Please reset game if you want to continue to play!</string>
 
 </resources>
