@@ -1,12 +1,15 @@
 package com.garnier.julien.hangman.ui
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.garnier.julien.hangman.R
 import com.garnier.julien.hangman.databinding.ActivityMainBinding
 import com.garnier.julien.hangman.ui.letter.LetterAdapter
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private val mainViewModel: MainViewModel by viewModels()
@@ -23,10 +26,21 @@ class MainActivity : AppCompatActivity() {
         // Init view
         binding.lettersToGuessRecyclerView.adapter = adapter
 
+        // Init listeners
+        binding.textInputGuesser.setEndIconOnClickListener {
+            val letter = binding.textInputGuesserEditText.text?.toString()
+            if (letter != null)
+                mainViewModel.guessLetter(letter)
+            else
+                Toast
+                    .makeText(this, getString(R.string.no_letter_to_guess), Toast.LENGTH_SHORT)
+                    .show()
+        }
+
+        // Update view according VM state
         mainViewModel
             .getCurrentGameStatusLiveData()
             .observe(this) {
-                // Update view according VM state
                 adapter.submitList(it.lettersAlreadyGuessed)
                 binding.victoryNumber.text =
                     resources.getString(R.string.number_of_victories, it.numberOfVictories)
