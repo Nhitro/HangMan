@@ -11,13 +11,14 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class DataModule {
+class DataModule {
 
     @Provides
     @Singleton
     fun provideHangManDatabase(application: Application): HangManDatabase {
         return Room
             .databaseBuilder(application, HangManDatabase::class.java, "hangman_database.db")
+            .createFromAsset("hangman_database.db")
             .build()
     }
 
