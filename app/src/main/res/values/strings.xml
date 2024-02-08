@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">HangMan</string>
+    <string name="reset_button">Reset</string>
+    <string name="player_status">Player status</string>
+    <string name="number_of_victories">Number of victories : %d</string>
+    <string name="number_of_games">Number of games : %d</string>
+    <string name="game_state_description">Try to guess the word !\nYou have %d tries left…</string>
+    <string name="hint_guesser_text_input">Tape any letter to guess</string>
+
 </resources>
