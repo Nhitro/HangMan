@@ -115,8 +115,10 @@ class MainViewModel @Inject constructor(
                     gameScreenState
                         .lettersAlreadyGuessed
                         ?.mapIndexed { index, shownLetter ->
-                            if (word[index].toString().equals(letter, ignoreCase = true)) letter
-                            else shownLetter
+                            if (!word[index].toString().equals(letter, ignoreCase = true)) shownLetter
+                            else
+                                if (index == 0) letter.uppercase()
+                                else letter.lowercase()
                         }
                         ?: arrayListOf()
 
