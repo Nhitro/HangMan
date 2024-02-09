@@ -19,7 +19,10 @@ class MainViewModel @Inject constructor(
     private val wordToGuessRepository: WordToGuessRepository,
 ): ViewModel() {
 
-    private val currentGameStatusMutableLiveData = MutableLiveData<CurrentGameStatus>()
+    private val gameScreenStateMutableLiveData = MutableLiveData<GameScreenState>()
+
+    private lateinit var lastGameStatus: GameStatus
+    private var lastWordToGuess: WordToGuess? = null
     init {
         viewModelScope.launch(Dispatchers.IO) {
             val gameStatus = gameStatusRepository.getCurrentGameStatus()
@@ -38,8 +41,12 @@ class MainViewModel @Inject constructor(
                 it.lettersAlreadyGuessed?.chunked(1) ?: it.word.map { HIDDEN_LETTER }
             }
 
-            currentGameStatusMutableLiveData.postValue(
-                CurrentGameStatus(
+            // Store init states into local variables for comparison later
+            lastGameStatus = gameStatus
+            lastWordToGuess = nextWordToGuess
+
+            gameScreenStateMutableLiveData.postValue(
+                GameScreenState(
                     nextWordToGuess,
                     lettersAlreadyGuessed,
                     gameStatus.numberOfGames,
@@ -53,29 +60,32 @@ class MainViewModel @Inject constructor(
 
     @MainThread
     fun guessLetter(letter: String) {
-        val currentGameStatus = getCurrentGameStatus()
+        val gameScreenState = getCurrentGameScreenState()
+        val wordToGuess = gameScreenState.wordToGuess
 
         // Do nothing when the game is already over, best way would be disable text input on UI side
-        if (currentGameStatus.isGameOver || currentGameStatus.wordToGuess == null)
+        if (gameScreenState.isGameOver || wordToGuess == null)
             return
 
         // Do nothing when player types a letter already guessed
-        if (currentGameStatus.lettersAlreadyGuessed?.contains(letter) == true)
+        if (gameScreenState.lettersAlreadyGuessed?.contains(letter) == true)
             return
 
-        val word = currentGameStatus.wordToGuess.word
+        val word = wordToGuess.word
 
-        currentGameStatusMutableLiveData.value =
+        gameScreenStateMutableLiveData.value =
             if (!word.contains(letter, ignoreCase = true)) {
-                val newNumberOfTries = currentGameStatus.numberOfTriesLeft - 1
+                val newNumberOfTries = gameScreenState.numberOfTriesLeft - 1
+                val isGuessOver = newNumberOfTries == 0
 
-                currentGameStatus.copy(
+                gameScreenState.copy(
+                    wordToGuess = wordToGuess.copy(alreadyGuessed = isGuessOver),
                     numberOfTriesLeft = newNumberOfTries,
-                    showLooserAlert = newNumberOfTries == 0,
+                    showLooserAlert = isGuessOver,
                 )
             } else {
                 val newAlreadyGuessedLettersList =
-                    currentGameStatus
+                    gameScreenState
                         .lettersAlreadyGuessed
                         ?.mapIndexed { index, shownLetter ->
                             if (word[index].toString().equals(letter, ignoreCase = true)) letter
@@ -83,17 +93,24 @@ class MainViewModel @Inject constructor(
                         }
                         ?: arrayListOf()
 
-                currentGameStatus.copy(
+                val isGuessOver = !newAlreadyGuessedLettersList.contains(HIDDEN_LETTER)
+
+                gameScreenState.copy(
+                    wordToGuess = wordToGuess.copy(
+                        lettersAlreadyGuessed = newAlreadyGuessedLettersList.joinToString(""),
+                        alreadyGuessed = isGuessOver
+                    ),
                     lettersAlreadyGuessed = newAlreadyGuessedLettersList,
-                    showWinnerAlert = !newAlreadyGuessedLettersList.contains(HIDDEN_LETTER),
+                    showWinnerAlert = isGuessOver,
                 )
             }
     }
 
-    fun getCurrentGameStatusLiveData(): LiveData<CurrentGameStatus> = currentGameStatusMutableLiveData
+    fun getGameScreenStateLiveData(): LiveData<GameScreenState> = gameScreenStateMutableLiveData
 
-    private fun getCurrentGameStatus() = currentGameStatusMutableLiveData.value ?: CurrentGameStatus()
-    data class CurrentGameStatus(
+    private fun getCurrentGameScreenState() = gameScreenStateMutableLiveData.value ?: GameScreenState()
+
+    data class GameScreenState(
         val wordToGuess: WordToGuess? = null,
         val lettersAlreadyGuessed: List<String>? = null,
         val numberOfGames: Int = -1,
