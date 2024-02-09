@@ -8,7 +8,7 @@ import com.garnier.julien.hangman.database.model.WordToGuess
 @Dao
 interface WordToGuessDao {
     @Update
-    suspend fun updateWordToGuess(wordToGuess: WordToGuess)
+    suspend fun updateWordToGuess(wordToGuessList: List<WordToGuess>)
 
     @Query("SELECT * FROM WordToGuess")
     suspend fun getAllWordToGuess(): List<WordToGuess>
