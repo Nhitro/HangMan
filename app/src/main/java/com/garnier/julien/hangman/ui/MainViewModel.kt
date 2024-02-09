@@ -137,6 +137,43 @@ class MainViewModel @Inject constructor(
             }
     }
 
+    @MainThread
+    fun startNewGame() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val nextWordToGuess =
+                wordToGuessRepository
+                    .getAllWordToGuess()
+                    .filter { !it.alreadyGuessed }
+                    .randomOrNull()
+
+            withContext(Dispatchers.Main) {
+                val gameScreenState = getCurrentGameScreenState()
+
+                gameScreenStateMutableLiveData.value =
+                    if (nextWordToGuess == null)
+                        gameScreenState.copy(
+                            wordToGuess = null,
+                            lettersAlreadyGuessed = null,
+                            numberOfGames = gameScreenState.numberOfGames + 1,
+                            isGameOver = true,
+                            showWinnerAlert = false,
+                            showLooserAlert = false,
+                        )
+                    else {
+                        lastWordToGuess = nextWordToGuess
+                        gameScreenState.copy(
+                            wordToGuess = nextWordToGuess,
+                            lettersAlreadyGuessed = nextWordToGuess.word.map { HIDDEN_LETTER },
+                            numberOfGames = gameScreenState.numberOfGames + 1,
+                            numberOfTriesLeft = MAX_NUMBER_OF_TRIES,
+                            showWinnerAlert = false,
+                            showLooserAlert = false,
+                        )
+                    }
+            }
+        }
+    }
+
     fun getGameScreenStateLiveData(): LiveData<GameScreenState> = gameScreenStateMutableLiveData
 
     private fun getCurrentGameScreenState() = gameScreenStateMutableLiveData.value ?: GameScreenState()
