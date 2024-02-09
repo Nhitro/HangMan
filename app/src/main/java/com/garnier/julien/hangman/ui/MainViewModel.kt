@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -131,6 +132,7 @@ class MainViewModel @Inject constructor(
                     ),
                     lettersAlreadyGuessed = newAlreadyGuessedLettersList,
                     showWinnerAlert = isGuessOver,
+                    numberOfVictories = if (isGuessOver) gameScreenState.numberOfVictories + 1 else gameScreenState.numberOfVictories,
                 )
             }
     }
