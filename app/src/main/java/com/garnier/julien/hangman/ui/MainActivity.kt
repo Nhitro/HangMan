@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
         binding.lettersToGuessRecyclerView.adapter = adapter
 
         // Init listeners
+        binding.resetButton.setOnClickListener { mainViewModel.resetGameStatus() }
         binding.textInputGuesser.setEndIconOnClickListener {
             val letter = binding.textInputGuesserEditText.text?.toString()
             if (letter == null)
