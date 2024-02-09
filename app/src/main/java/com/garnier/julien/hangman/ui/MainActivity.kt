@@ -3,6 +3,7 @@ package com.garnier.julien.hangman.ui
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.garnier.julien.hangman.R
 import com.garnier.julien.hangman.databinding.ActivityMainBinding
@@ -41,7 +42,7 @@ class MainActivity : AppCompatActivity() {
 
         // Update view according VM state
         mainViewModel
-            .getCurrentGameStatusLiveData()
+            .getGameScreenStateLiveData()
             .observe(this) {
                 adapter.submitList(it.lettersAlreadyGuessed)
                 binding.victoryNumber.text =
@@ -51,6 +52,30 @@ class MainActivity : AppCompatActivity() {
                 binding.gameDescription.text =
                     if (it.isGameOver) getString(R.string.game_is_over)
                     else resources.getString(R.string.game_state_description, it.numberOfTriesLeft)
+
+                if (it.showLooserAlert || it.showWinnerAlert) {
+                    showEndGameDialog(it)
+                }
             }
+    }
+
+    private fun showEndGameDialog(gameScreenState: MainViewModel.GameScreenState) {
+        val isPlayerWon = gameScreenState.showWinnerAlert
+
+        AlertDialog
+            .Builder(this)
+            .setCancelable(false)
+            .setTitle(
+                if (isPlayerWon) R.string.won_dialog_title
+                else R.string.lose_dialog_title
+            )
+            .setMessage(
+                resources.getString(
+                    R.string.description_end_game_dialog,
+                    gameScreenState.wordToGuess?.word
+                )
+            )
+            .setPositiveButton(R.string.end_game_dialog_positive_button) { _, _ -> mainViewModel.startNewGame() }
+            .show()
     }
 }
