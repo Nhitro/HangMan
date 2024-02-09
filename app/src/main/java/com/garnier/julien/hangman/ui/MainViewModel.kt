@@ -4,12 +4,16 @@ import androidx.annotation.MainThread
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
+import com.garnier.julien.hangman.database.model.GameStatus
 import com.garnier.julien.hangman.database.model.WordToGuess
 import com.garnier.julien.hangman.database.repository.GameStatusRepository
 import com.garnier.julien.hangman.database.repository.WordToGuessRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,6 +29,7 @@ class MainViewModel @Inject constructor(
     private var lastWordToGuess: WordToGuess? = null
     init {
         viewModelScope.launch(Dispatchers.IO) {
+            // Initialize state according database data
             val gameStatus = gameStatusRepository.getCurrentGameStatus()
             val allWordToGuess = wordToGuessRepository.getAllWordToGuess()
             val nextWordToGuess: WordToGuess? =
@@ -55,6 +60,28 @@ class MainViewModel @Inject constructor(
                     isGameOver
                 )
             )
+
+            // Start a flow on current game status in charge of keeping up to date database according player actions
+            gameScreenStateMutableLiveData
+                .asFlow()
+                .flowOn(Dispatchers.IO)
+                .filterNotNull()
+                .collect { gameScreenState ->
+                    val currentGameStatus = gameScreenState.toGameStatus(gameStatus.id)
+
+                    // Only update database if model changed according last database value
+                    if (currentGameStatus != gameStatus) {
+                        gameStatusRepository.updateGameStatus(currentGameStatus)
+                        lastGameStatus = currentGameStatus
+                    }
+
+                    gameScreenState.wordToGuess
+                        ?.takeIf { it.id == lastWordToGuess?.id && it != lastWordToGuess }
+                        ?.let {
+                            wordToGuessRepository.updateWordToGuess(it)
+                            lastWordToGuess = it
+                        }
+                }
         }
     }
 
@@ -119,7 +146,15 @@ class MainViewModel @Inject constructor(
         val isGameOver: Boolean = false,
         val showWinnerAlert: Boolean = false,
         val showLooserAlert: Boolean = false,
-    )
+    ) {
+        fun toGameStatus(id: Long) = GameStatus(
+            id,
+            numberOfVictories,
+            numberOfGames,
+            wordToGuess?.id ?: -1L,
+            numberOfTriesLeft
+        )
+    }
 
     companion object {
         private const val MAX_NUMBER_OF_TRIES = 10
